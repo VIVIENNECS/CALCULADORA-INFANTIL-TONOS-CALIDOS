@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Juega y Aprende Matemáticas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #ffe0b2, #ffd180, #ffab91);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #4a148c;
+    }
+    header {
+      background-color: #ffccbc;
+      padding: 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    #game, #start-screen {
+      margin: 2rem auto;
+      background: #fff3e0;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    #animal {
+      width: 150px;
+      height: 150px;
+      margin: 1rem auto;
+      transition: transform 0.3s ease;
+    }
+    .animate {
+      transform: scale(1.2);
+    }
+    input {
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      width: 100px;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      background-color: #ff8a65;
+      border: none;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff7043;
+    }
+    #score {
+      font-size: 1.5rem;
+      margin-top: 1rem;
+    }
+    #result {
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>Juega y Aprende Matemáticas 🧠🦁🐵🐸</header>
+
+  <audio id="bg-music" src="https://cdn.pixabay.com/audio/2022/10/09/audio_91d8f30946.mp3" loop></audio>
+  <audio id="roar-sound" src="https://cdn.pixabay.com/audio/2022/03/22/audio_91179fb0dc.mp3"></audio>
+
+  <div id="start-screen">
+    <h2>¡Bienvenido!</h2>
+    <p>Haz clic en el botón para comenzar a jugar.</p>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+
+  <div id="game" style="display: none;">
+    <img id="animal" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Animal divertido">
+    <div id="question">¿Cuánto es 1 + 1?</div>
+    <input type="number" id="answer" />
+    <br />
+    <button onclick="checkAnswer()">Responder</button>
+    <div id="result"></div>
+    <div id="score">Puntos: 0 / 50</div>
+  </div>
+
+  <script>
+    const animals = [
+      'https://cdn-icons-png.flaticon.com/512/616/616408.png',
+      'https://cdn-icons-png.flaticon.com/512/616/616408.png',
+      'https://cdn-icons-png.flaticon.com/512/616/616408.png',
+      'https://cdn-icons-png.flaticon.com/512/616/616408.png',
+      'https://cdn-icons-png.flaticon.com/512/616/616408.png'
+    ];
+
+    let score = 0;
+    let totalQuestions = 10;
+    let currentQuestion = 0;
+    let correctAnswer = 0;
+
+    const bgMusic = document.getElementById('bg-music');
+    const roarSound = document.getElementById('roar-sound');
+    const animalImg = document.getElementById('animal');
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion() {
+      const num1 = getRandomInt(1, 10);
+      const num2 = getRandomInt(1, 10);
+      const operations = ['+', '-', '*', '/'];
+      const op = operations[getRandomInt(0, 3)];
+      let question;
+
+      switch(op) {
+        case '+':
+          correctAnswer = num1 + num2;
+          question = `${num1} + ${num2}`;
+          break;
+        case '-':
+          correctAnswer = num1 - num2;
+          question = `${num1} - ${num2}`;
+          break;
+        case '*':
+          correctAnswer = num1 * num2;
+          question = `${num1} × ${num2}`;
+          break;
+        case '/':
+          correctAnswer = (num1 * num2) / num2;
+          question = `${num1 * num2} ÷ ${num2}`;
+          break;
+      }
+
+      document.getElementById('question').innerText = `¿Cuánto es ${question}?`;
+      document.getElementById('answer').value = '';
+      animalImg.src = animals[getRandomInt(0, animals.length - 1)];
+    }
+
+    function checkAnswer() {
+      const userAnswer = Number(document.getElementById('answer').value);
+      if (userAnswer === correctAnswer) {
+        score += 5;
+        document.getElementById('result').innerText = '¡Correcto! 🎉';
+        roarSound.currentTime = 0;
+        roarSound.play();
+        animalImg.classList.add('animate');
+        setTimeout(() => animalImg.classList.remove('animate'), 300);
+      } else {
+        document.getElementById('result').innerText = `¡Ups! La respuesta correcta era ${correctAnswer}`;
+      }
+      currentQuestion++;
+      document.getElementById('score').innerText = `Puntos: ${score} / 50`;
+
+      if (currentQuestion < totalQuestions) {
+        setTimeout(() => {
+          document.getElementById('result').innerText = '';
+          generateQuestion();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          document.getElementById('game').innerHTML = `
+            <h2>¡Juego terminado!</h2>
+            <p>Tu puntuación final fue: ${score} / 50</p>
+            <button onclick="restartGame()">Jugar de nuevo</button>
+          `;
+        }, 2000);
+      }
+    }
+
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      score = 0;
+      currentQuestion = 0;
+      document.getElementById('score').innerText = `Puntos: 0 / 50`;
+      bgMusic.play();
+      generateQuestion();
+    }
+
+    function restartGame() {
+      document.getElementById('game').innerHTML = `
+        <img id="animal" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Animal divertido">
+        <div id="question">¿Cuánto es 1 + 1?</div>
+        <input type="number" id="answer" />
+        <br />
+        <button onclick="checkAnswer()">Responder</button>
+        <div id="result"></div>
+        <div id="score">Puntos: 0 / 50</div>
+      `;
+      score = 0;
+      currentQuestion = 0;
+      window.animalImg = document.getElementById('animal');
+      generateQuestion();
+    }
+  </script>
+</body>
+</html>
